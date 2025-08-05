@@ -65,17 +65,15 @@ selected_ticker = st.sidebar.selectbox('Select a ticker', tickers)
 
 filtered_df = df[df['Ticker'] == selected_ticker]
 
-# show last closing price date
-st.metric('Last Refresh Date', last_close_date.strftime('%Y-%m-%d'))
-
 # show summary metrics 
 st.subheader(f'Summary metrics for {selected_ticker}')
 latest = filtered_df.sort_values('Date').iloc[-1]
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(3)
 col1.metric('Latest Close', f"${latest['Close']:.2f}")
 col2.metric('Cumulative Return', f"{latest['Cumulative_Return']:.2f}%")
 col3.metric('7-Day Momentum', f"{latest['Momentum_7d']}%")
+col4.metric('Last Refresh Date', last_close_date.strftime('%Y-%m-%d'))
 
 st.subheader("📊 Visual Metrics")
 
