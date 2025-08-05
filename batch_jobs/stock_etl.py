@@ -22,11 +22,11 @@ tickers = [
 ]
 
 # Get yesterday's date
-yesterday = datetime.now() - timedelta(days=1)
-end_date = yesterday.strftime("%Y-%m-%d")
+today = datetime.now()
+end_date = today.strftime("%Y-%m-%d")
 
 # Get start date (3 years before yesterday)
-start_date = (yesterday - timedelta(days=3*365)).strftime("%Y-%m-%d")
+start_date = (today - timedelta(days=3*365)).strftime("%Y-%m-%d")
 
 # Download stock data
 raw = yf.download(tickers, start=start_date, end=end_date, group_by='ticker')
