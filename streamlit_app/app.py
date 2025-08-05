@@ -66,7 +66,7 @@ selected_ticker = st.sidebar.selectbox('Select a ticker', tickers)
 filtered_df = df[df['Ticker'] == selected_ticker]
 
 # show last closing price date
-st.metric('Last Closing price date', last_close_date.strftime('%Y-%m-%d'))
+st.metric('Last Refresh Date', last_close_date.strftime('%Y-%m-%d'))
 
 # show summary metrics 
 st.subheader(f'Summary metrics for {selected_ticker}')
