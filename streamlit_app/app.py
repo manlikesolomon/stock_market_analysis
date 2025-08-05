@@ -2,11 +2,46 @@ import os
 import pandas as pd
 import streamlit as st
 import altair
+import subprocess
+import datetime
 import plotly.graph_objects as go
 
-# Dynamically get the data path
+# Absolute path for the timestamp file and setup.sh script
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TIMESTAMP_FILE = os.path.join(PROJECT_ROOT, 'last_run_date.txt')
+SETUP_SCRIPT = os.path.join(PROJECT_ROOT, 'setup.sh')
 DATA_FILEPATH = os.path.join(PROJECT_ROOT, 'data', 'stock_data_delta.parquet')
+
+def run_setup_script():
+    """Runs the setup.sh script."""
+    try:
+        subprocess.run(['bash', SETUP_SCRIPT], check=True)
+        st.write("Setup script executed successfully.")
+    except subprocess.CalledProcessError as e:
+        st.error(f"Error executing setup script: {e}")
+
+def check_and_run_setup():
+    """Check if the setup script needs to run (once a day)."""
+    if os.path.exists(TIMESTAMP_FILE):
+        with open(TIMESTAMP_FILE, 'r') as f:
+            last_run_date = f.read().strip()
+        current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        
+        if last_run_date != current_date:
+            # The script hasn't been run today, so run it and update the timestamp
+            run_setup_script()
+            with open(TIMESTAMP_FILE, 'w') as f:
+                f.write(current_date)
+    else:
+        # No timestamp file exists, so run the script for the first time
+        run_setup_script()
+        with open(TIMESTAMP_FILE, 'w') as f:
+            f.write(datetime.datetime.now().strftime('%Y-%m-%d'))
+
+# Check if we need to run the setup script
+check_and_run_setup()
+
+
 
 @st.cache_data
 def load_data():
@@ -14,12 +49,14 @@ def load_data():
 
 df = load_data()
 
+last_close_date = df['Date'].max()
+
 
 # set page layout
 st.set_page_config(layout='wide', page_title='Stock Market Analysis')
 
 st.title("📈 Stock Market Dashboard")
-st.markdown('Explore stock metrics for 30 popular tickers using three years of historic data')
+st.markdown(f'Explore stock metrics for 30 popular tickers using three years of historic data')
 st.markdown("Use the sidebar to explore a ticker. You can compare KPIs and identify trends across different metrics.")
 
 # set sidebar
@@ -27,6 +64,9 @@ tickers = df['Ticker'].unique().tolist()
 selected_ticker = st.sidebar.selectbox('Select a ticker', tickers)
 
 filtered_df = df[df['Ticker'] == selected_ticker]
+
+# show last closing price date
+st.metric('Last Closing price date', last_close_date.strftime('%Y-%m-%d'))
 
 # show summary metrics 
 st.subheader(f'Summary metrics for {selected_ticker}')
